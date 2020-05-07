@@ -18,3 +18,5 @@ cut -f 2 syscall_headers.txt|sort|uniq -c|sort -n -r|head -n 3
 
 # 発展課題A
 grep -Fxf <(rev words.txt)  words.txt |wc -l
+# or
+rev words.txt|grep -Fxf words.txt |wc -l
