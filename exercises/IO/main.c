@@ -20,13 +20,16 @@ int use_stdin = 0;
 unsigned int buffer_size = 64;
 
 int do_cat(int size, char **args) {
+    /* TaskA implement */
     if (size == 0){
       size = 1;
       *args = "stdin";
       use_stdin = 1;
     }
+
     for (int i = 0; i < size; i++) {
         char *fname = args[i];
+        /* TaskA implement */
         if(!strcmp("-",fname)) {
           fname = "stdin";
           use_stdin = 1;
@@ -63,7 +66,8 @@ int do_cat(int size, char **args) {
           FILE *infp;
           size_t cc;
           char buf[buffer_size+1];
-
+          
+          /* TaskA implement */
           if (use_stdin) infp = stdin;
           else{
             if((infp = fopen(fname,"r")) == NULL){

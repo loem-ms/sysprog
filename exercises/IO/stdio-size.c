@@ -43,6 +43,7 @@ void check(FILE *fp) {
     printf("unbuffered: %d\n", is_unbuffered(fp));
 }
 
+/* TaskB implement */
 int main(int argc, char **argv) {
     int size[8] = {4194304, 524288, 65536, 8192, 1024, 128, 16, 2};
     system("cat /dev/random | base64 | head -c 1048756 > 'random.bin' ");
