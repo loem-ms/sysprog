@@ -5,6 +5,7 @@
 #include <sys/types.h> /* read */
 #include <sys/uio.h>   /* read, write */
 #include <unistd.h>    /* getopt, read, write, close */
+#include <string.h>
 
 /** argv[0] */
 char *cmdname;
@@ -12,94 +13,82 @@ char *cmdname;
 /* use stdio (-l option) */
 int use_stdio = 0;
 
+/* use stdin (use stdin) */
+int use_stdin = 0;
+
 /* buffer size (-s N option) */
 unsigned int buffer_size = 64;
 
-/* use stdin */
-int use_stdin = 0;
-
 int do_cat(int size, char **args) {
-    
-    /* myImplement Task A ⬇*/
-    if(size==0) {
-        size = 1;
-        *args = "stdin";
-        use_stdin = 1;
+    if (size == 0){
+      size = 1;
+      *args = "stdin";
+      use_stdin = 1;
     }
-    /* myImplement ⬆*/
-    
     for (int i = 0; i < size; i++) {
-        
         char *fname = args[i];
-
-        /* myImplement Task A ⬇*/
-        if(fname[0]=='-') {
-            use_stdin=1;
-            fname = "stdin";
+        if(!strcmp("-",fname)) {
+          fname = "stdin";
+          use_stdin = 1;
         }
-        /* myImplement ⬆*/
-
         LOG("filename = %s", fname);
-        
         if (!use_stdio) {
-            /* -l unavailable (Task 1); implement here */
-            /* myImplement ⬇*/
-            int infd;
-            ssize_t cc;
-            char buf[buffer_size];
-            if(use_stdin) infd = STDIN_FILENO;  //TaskA: use standard input
-            else{
-                if((infd=open(fname,O_RDONLY))==-1){
-                    perror("open input file");
-                    exit(1);
-                }
+          /* -l unavailable (Task 1); implement here */
+          int infd;
+          ssize_t cc;
+          char buf[buffer_size+1];
+
+          if (use_stdin) infd = STDIN_FILENO;
+          else{
+            if((infd = open(fname,O_RDONLY)) == -1){
+              perror("open input file");
+              exit(1);
             }
-            
-            while((cc=read(infd,buf,sizeof(buf)))>0){
-                if((write(STDOUT_FILENO,buf,cc))!=cc){
-                    perror("write");
-                    exit(1);
-                }
+          }
+          
+          while((cc = read(infd,buf,buffer_size)) > 0){
+            if(write(STDOUT_FILENO,buf,cc) < 0){
+              perror("write");
+              exit(1);
             }
-            if(cc==-1){
-                perror("read input file");
-                exit(1);
-            }
-            close(infd);
-            
-            /* myImplement ⬆*/ 
-            //write(STDOUT_FILENO, "Hello World.\n", 13);
+          }
+          if(cc<0){
+            perror("read input file");
+            exit(1);
+          }
+          close(infd);
+          //write(STDOUT_FILENO, "Hello World.\n", 13);
         } else {
-            /* -l available (Task 2); implement here */
-            /* myImplement ⬇*/
+          /* -l available (Task 2); implement here */
+          FILE *infp;
+          size_t cc;
+          char buf[buffer_size+1];
 
-            FILE *inf;
-            size_t cc;
-            char buf[buffer_size];
-            int count;
-
-            if(use_stdin) inf=stdin;    //TaskA: use standard input
-            else{
-                if((inf=fopen(fname,"r"))==NULL){
-                    fprintf(stderr,"fopen input file");
-                    exit(1);
-                }
+          if (use_stdin) infp = stdin;
+          else{
+            if((infp = fopen(fname,"r")) == NULL){
+              fprintf(stderr,"fopen input file");
+              exit(1);
             }
-            while((cc = fread(buf,sizeof(char),sizeof(buf),inf))>0){
-                if(ferror(inf)){
-                    fprintf(stderr,"fread error");
-                    exit(1);
-                }else{
-                    if(feof(inf)) count = cc;
-                    else count = sizeof(buf);
-                    if((fwrite(buf,sizeof(char),count,stdout))<count){
-                        fprintf(stderr,"fwrite error");
-                        exit(1);
-                    }
-                }
+          }
+          
+          while((cc = fread(buf,sizeof(char),buffer_size,infp)) == buffer_size){
+            if(fwrite(buf,sizeof(char),buffer_size,stdout) < buffer_size){
+              fprintf(stderr, "fwrite");
+              exit(1);
             }
-            fclose(inf);
-            /* myImplement ⬆*/ 
+          }
+          if(feof(infp)){
+            if(fwrite(buf,sizeof(char),cc,stdout) < cc){
+              fprintf(stderr, "fwrite");
+              exit(1);
+            }
+          }
+          if(ferror(infp)){
+            fprintf(stderr, "fread");
+            exit(1);
+          }
+          fclose(infp);
         }
     }
     return 0;
@@ -108,7 +97,7 @@ int do_cat(int size, char **args) {
 /** parse program arguments. */
 void parse_options(int argc, char **argv) {
     int opt;
-    while ((opt = getopt(argc, argv, "qfls:")) != -1) {
+    while ((opt = getopt(argc, argv, "qls:")) != -1) {
         switch (opt) {
         case 'q': /* -q: quiet */
             l_set_quiet(1);

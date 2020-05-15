@@ -9,11 +9,16 @@ all: $(EXES)
 .PHONY: all download clean test test1 test2 testA benchmark
 
 URL=https://www.se.cs.titech.ac.jp/lecture/sysprog/2-iocat
-DLS=$(SRCS) $(HDRS) $(TXTS) $(SCRIPTS) $(TESTS)
+DLS=$(SRCS) $(HDRS) $(TXTS) $(SCRIPTS) $(TESTS) report.txt
 download:
 	-mkdir -p t
 	for x in $(DLS); do [ -f $$x ] || curl -u sysprog:int128 $(URL)/$$x -o $$x; done
 	chmod ugo+x $(SCRIPTS)
+
+REPORTS=$(SRCS) $(HDRS) report.txt
+zip: report-io.zip
+report-io.zip: $(REPORTS)
+	zip $@ $+
 
 CC=clang
 CFLAGS=-std=gnu99 -Wall -Werror
@@ -21,7 +26,8 @@ main: main.c logger.c $(HDRS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ main.c logger.c
 
 clean:
-	-rm $(EXES)
+	-rm -f $(EXES)
+	-rm -f random.bin
 
 install_strace: ~/.apt/usr/bin/strace
 ~/.apt/usr/bin/strace: strace-base64.txt
