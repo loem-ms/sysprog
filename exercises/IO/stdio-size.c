@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #if defined(_IO_UNBUFFERED)
 
@@ -59,12 +60,27 @@ void check(FILE *fp) {
 }
 
 int main(int argc, char **argv) {
-    char buf[256];
-    fread(buf, 1, 1, stdin);
-    printf("[stdin]\n");
-    check(stdin);
-    printf("[stdout]\n");
-    check(stdout);
-    printf("[stderr]\n");
-    check(stderr);
+    
+    FILE *inf;
+    size_t cc;
+    char buf[8192];
+    int count;    
+    if((inf=fopen("random.bin","r"))==NULL){
+        fprintf(stderr,"fopen input file");
+        exit(1);
+    }
+    puts("opened");
+    if((cc=fread(buf,1,sizeof(buf),inf))<sizeof(buf)){
+        if(ferror(inf)){
+            fprintf(stderr,"fopen input file");
+            exit(1);
+        }else{
+            fwrite(buf,1,cc,stdout);
+        }
+    }
+    puts("inf :");
+    check(inf);
+    fclose(inf);
+
+    return 0;
 }

@@ -19,10 +19,26 @@ unsigned int buffer_size = 64;
 int use_stdin = 0;
 
 int do_cat(int size, char **args) {
-
+    
+    /* myImplement Task A ⬇*/
+    if(size==0) {
+        size = 1;
+        *args = "stdin";
+        use_stdin = 1;
+    }
+    /* myImplement ⬆*/
+    
     for (int i = 0; i < size; i++) {
         
         char *fname = args[i];
+
+        /* myImplement Task A ⬇*/
+        if(fname[0]=='-') {
+            use_stdin=1;
+            fname = "stdin";
+        }
+        /* myImplement ⬆*/
+
         LOG("filename = %s", fname);
         
         if (!use_stdio) {
@@ -31,10 +47,12 @@ int do_cat(int size, char **args) {
             int infd;
             ssize_t cc;
             char buf[buffer_size];
-            
-            if((infd=open(fname,O_RDONLY))==-1){
-                perror("open input file");
-                exit(1);
+            if(use_stdin) infd = STDIN_FILENO;  //TaskA: use standard input
+            else{
+                if((infd=open(fname,O_RDONLY))==-1){
+                    perror("open input file");
+                    exit(1);
+                }
             }
             
             while((cc=read(infd,buf,sizeof(buf)))>0){
@@ -60,11 +78,13 @@ int do_cat(int size, char **args) {
             char buf[buffer_size];
             int count;
 
-            if((inf=fopen(fname,"r"))==NULL){
-                fprintf(stderr,"fopen input file");
-                exit(1);
+            if(use_stdin) inf=stdin;    //TaskA: use standard input
+            else{
+                if((inf=fopen(fname,"r"))==NULL){
+                    fprintf(stderr,"fopen input file");
+                    exit(1);
+                }
             }
-
             while((cc = fread(buf,sizeof(char),sizeof(buf),inf))>0){
                 if(ferror(inf)){
                     fprintf(stderr,"fread error");
