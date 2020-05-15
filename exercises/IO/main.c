@@ -15,22 +15,28 @@ int use_stdio = 0;
 /* buffer size (-s N option) */
 unsigned int buffer_size = 64;
 
+/* use stdin */
+int use_stdin = 0;
 
 int do_cat(int size, char **args) {
+
     for (int i = 0; i < size; i++) {
+        
         char *fname = args[i];
         LOG("filename = %s", fname);
+        
         if (!use_stdio) {
             /* -l unavailable (Task 1); implement here */
             /* myImplement ⬇*/
-
             int infd;
             ssize_t cc;
             char buf[buffer_size];
+            
             if((infd=open(fname,O_RDONLY))==-1){
                 perror("open input file");
                 exit(1);
             }
+            
             while((cc=read(infd,buf,sizeof(buf)))>0){
                 if((write(STDOUT_FILENO,buf,cc))!=cc){
                     perror("write");
@@ -50,22 +56,29 @@ int do_cat(int size, char **args) {
             /* myImplement ⬇*/
 
             FILE *inf;
-            //size_t cc;
+            size_t cc;
             char buf[buffer_size];
+            int count;
 
             if((inf=fopen(fname,"r"))==NULL){
                 fprintf(stderr,"fopen input file");
                 exit(1);
             }
-           
-            while(feof(inf)){
-                fread(buf,1,sizeof(buf),inf);
-                fwrite(buf,1,sizeof(buf),stdout);
+
+            while((cc = fread(buf,sizeof(char),sizeof(buf),inf))>0){
+                if(ferror(inf)){
+                    fprintf(stderr,"fread error");
+                    exit(1);
+                }else{
+                    if(feof(inf)) count = cc;
+                    else count = sizeof(buf);
+                    if((fwrite(buf,sizeof(char),count,stdout))<count){
+                        fprintf(stderr,"fwrite error");
+                        exit(1);
+                    }
+                }
             }
-            
             fclose(inf);
-
-
             /* myImplement ⬆*/ 
         }
     }
