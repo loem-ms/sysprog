@@ -45,6 +45,7 @@ void check(FILE *fp) {
 
 int main(int argc, char **argv) {
     int size[8] = {4194304, 524288, 65536, 8192, 1024, 128, 16, 2};
+    system("cat /dev/random | base64 | head -c 1048756 > 'random.bin' ");
     FILE *infp;
     if((infp = fopen("random.bin","r")) == NULL){
         fprintf(stderr,"fopen input file");
