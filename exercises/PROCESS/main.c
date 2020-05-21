@@ -18,11 +18,12 @@ int prompt = 1;
 
 char *cmdname;
 
+#define MAX_PIPE 10
 
 /** Run a node and obtain an exit status. */
 int invoke_node(node_t *node) {
     LOG("Invoke: %s", inspect_node(node));
-
+    int status;
     switch (node->type) {
     case N_COMMAND:
         for (int i = 0; node->argv[i] != NULL; i++) {
@@ -30,18 +31,105 @@ int invoke_node(node_t *node) {
         }
 
         /* Simple command execution (Task 1); implement here */
-
-        // char *argv[] = {"whoami", NULL};
-        // execvp("whoami", argv);
-
+        if(fork() == 0){
+            /* child process */
+            execvp(node->argv[0],node->argv);
+            perror(node->argv[0]);
+            exit(1);
+        }
+        if (wait(&status) == (pid_t)-1){
+            perror("wait");
+            exit(1);
+        }
         break;
 
     case N_PIPE: /* foo | bar */
         LOG("node->lhs: %s", inspect_node(node->lhs));
         LOG("node->rhs: %s", inspect_node(node->rhs));
-
-        /* Simple command execution (Tasks 2 and 3); implement here */
-
+        /* Simple comm and execution (Tasks 2 and 3); implement here */
+        
+        /* One pipe */
+        /*
+        
+        int fd[2];
+        pipe(fd);
+        if(fork() == 0){
+            dup2(fd[1],1);
+            close(fd[0]); close(fd[1]);
+            execvp(node->lhs->argv[0],node->lhs->argv);
+            perror(node->lhs->argv[0]);
+            exit(1);
+        }else {
+            if(fork()==0){
+                dup2(fd[0],0);
+                close(fd[0]); close(fd[1]);
+                execvp(node->rhs->argv[0],node->rhs->argv);
+                perror(node->rhs->argv[0]);
+                exit(1);
+            }else{
+                close(fd[0]); close(fd[1]);
+                if (wait(&status) == (pid_t)-1){
+                    perror("wait");
+                    exit(1);
+                }
+                if (wait(&status) == (pid_t)-1){
+                    perror("wait");
+                    exit(1);
+                }
+            }
+        }
+        */
+        
+        int fd[MAX_PIPE][2];
+        int i=0;
+        do{
+            if(node->rhs!=NULL){
+                pipe(fd[i]);
+                //LOG("created");
+            }
+            
+            if(fork()==0){
+                /* child process */
+                if(i==0){
+                    dup2(fd[i][1],1);
+                    close(fd[i][0]); close(fd[i][1]);
+                    //LOG("first pipe%d",i);
+                    //LOG("cmd:%s",node->lhs->argv[0]);
+                    execvp(node->lhs->argv[0],node->lhs->argv);
+                    perror(node->lhs->argv[0]);
+                    exit(1);
+                }else if(node->type==N_COMMAND){
+                    dup2(fd[i-1][0],0);
+                    close(fd[i-1][0]); close(fd[i-1][1]);
+                    //LOG("final pipe%d",i-1);
+                    //LOG("cmd:%s",inspect_node(node));
+                    execvp(node->argv[0],node->argv);
+                    perror(node->argv[0]);
+                    exit(1);
+                }else{
+                    dup2(fd[i-1][0],0);
+                    dup2(fd[i][1],1);
+                    close(fd[i-1][0]);close(fd[i-1][1]);
+                    close(fd[i][0]);close(fd[i][1]);
+                    //LOG("middle pipe%d-%d",i-1,i);
+                    //LOG("cmd:%s",node->lhs->argv[0]);
+                    execvp(node->lhs->argv[0],node->lhs->argv);
+                    perror(node->lhs->argv[0]);
+                    exit(1);
+                }
+            }else if(i>0){
+                //LOG("close");
+                close(fd[i-1][0]);close(fd[i-1][1]);
+            }
+            i++;
+            if(node->type == N_COMMAND) break;
+            else node = node->rhs;
+        }while(node->type==N_PIPE || node->type==N_COMMAND);
+        
+        for(int j = i;j>0;j--){
+            wait(&status);
+        }
+        
         break;
 
     case N_REDIRECT_IN:     /* foo < bar */
