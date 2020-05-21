@@ -1,0 +1,149 @@
+#include "main.h"
+#include <assert.h>
+#include <fcntl.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+/** The max characters of one cmdline (incl. NULL terminator) */
+#define MAX_LINE 8192
+
+#define BIRD "\xF0\x9F\x90\xA6"
+
+/** Whether or not to show the prompt */
+int prompt = 1;
+
+char *cmdname;
+
+
+/** Run a node and obtain an exit status. */
+int invoke_node(node_t *node) {
+    LOG("Invoke: %s", inspect_node(node));
+
+    switch (node->type) {
+    case N_COMMAND:
+        for (int i = 0; node->argv[i] != NULL; i++) {
+            LOG("node->argv[%d]: \"%s\"", i, node->argv[i]);
+        }
+
+        /* Simple command execution (Task 1); implement here */
+
+        // char *argv[] = {"whoami", NULL};
+        // execvp("whoami", argv);
+
+        break;
+
+    case N_PIPE: /* foo | bar */
+        LOG("node->lhs: %s", inspect_node(node->lhs));
+        LOG("node->rhs: %s", inspect_node(node->rhs));
+
+        /* Simple command execution (Tasks 2 and 3); implement here */
+
+        break;
+
+    case N_REDIRECT_IN:     /* foo < bar */
+    case N_REDIRECT_OUT:    /* foo > bar */
+    case N_REDIRECT_APPEND: /* foo >> bar */
+        LOG("node->filename: %s", node->filename);
+
+        /* Redirection (Task 4); implement here */
+
+        break;
+
+    case N_SEQUENCE: /* foo ; bar */
+        LOG("node->lhs: %s", inspect_node(node->lhs));
+        LOG("node->rhs: %s", inspect_node(node->rhs));
+
+        /* Sequential execution (Task A); implement here */
+
+        break;
+
+    case N_AND: /* foo && bar */
+    case N_OR:  /* foo || bar */
+        LOG("node->lhs: %s", inspect_node(node->lhs));
+        LOG("node->rhs: %s", inspect_node(node->rhs));
+
+        /* Branching (Task B); implement here */
+
+        break;
+
+    case N_SUBSHELL: /* ( foo... ) */
+        LOG("node->lhs: %s", inspect_node(node->lhs));
+
+        /* Subshell execution (Task C); implement here */
+
+        break;
+
+    default:
+        assert(false);
+    }
+    return 0;
+}
+
+void parse_options(int argc, char **argv) {
+    int opt;
+    while ((opt = getopt(argc, argv, "qp")) != -1) {
+        switch (opt) {
+        case 'q': /* -q: quiet */
+            l_set_quiet(1);
+            break;
+        case 'p': /* -p: no-prompt */
+            prompt = 0;
+            break;
+        case '?':
+        default:
+            fprintf(stderr, "Usage: %s [-q] [-p] [cmdline ...]\n", cmdname);
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+int invoke_line(char *line) {
+    LOG("Input line='%s'", line);
+    node_t *node = yacc_parse(line);
+    if (node == NULL) {
+        LOG("Obtained empty line: ignored");
+        return 0;
+    }
+    if (!l_get_quiet()) {
+        dump_node(node, stdout);
+    }
+    int exit_status = invoke_node(node);
+    free_node(node);
+    return exit_status;
+}
+
+int main(int argc, char **argv) {
+    cmdname = argv[0];
+    parse_options(argc, argv);
+    if (optind < argc) {
+        /* Execute each cmdline in the arguments if exists */
+        int exit_status;
+        for (int i = optind; i < argc; i++) {
+            exit_status = invoke_line(argv[i]);
+        }
+        return exit_status;
+    }
+
+    for (int history_id = 1;; history_id++) {
+        char line[MAX_LINE];
+        if (prompt) {
+            // printf("ttsh[%d]> ", history_id);
+            printf("ttsh[%d] %s ", history_id, BIRD);
+        }
+        /* Read one line */
+        if (fgets(line, sizeof(line), stdin) == NULL) {
+            /* EOF: Ctrl-D (^D) */
+            return EXIT_SUCCESS;
+        }
+        /* Erase line breaks */
+        char *p = strchr(line, '\n');
+        if (p) {
+            *p = '\0';
+        }
+        invoke_line(line);
+    }
+}

@@ -1,0 +1,2 @@
+( ./fd ; echo hello | ./fd -i | ./fd -i ) > __test__.txt
+cat __test__.txt

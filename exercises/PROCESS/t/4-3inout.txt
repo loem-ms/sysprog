@@ -1,0 +1,2 @@
+rev < t/hello.txt > __test__.txt
+cat __test__.txt
