@@ -13,13 +13,24 @@
 
 #define BIRD "\xF0\x9F\x90\xA6"
 
+#define MAX_PIPE 10
+
 /** Whether or not to show the prompt */
 int prompt = 1;
 
 char *cmdname;
 
-#define MAX_PIPE 10
+int status;
 
+int open_file(char *filename, type_t io){
+    if(io == N_REDIRECT_IN){
+        return open(filename,O_RDONLY);
+    }else if(io == N_REDIRECT_OUT){
+        return open(filename,O_WRONLY|O_CREAT|O_TRUNC,0666);
+    }else {
+        return open(filename,O_WRONLY|O_APPEND|O_CREAT,0666);
+    }
+}
 /** Run a node and obtain an exit status. */
 int invoke_node(node_t *node) {
     LOG("Invoke: %s", inspect_node(node));
@@ -95,9 +106,15 @@ int invoke_node(node_t *node) {
                     close(fd[i][0]); close(fd[i][1]);
                     //LOG("first pipe%d",i);
                     //LOG("cmd:%s",node->lhs->argv[0]);
-                    execvp(node->lhs->argv[0],node->lhs->argv);
-                    perror(node->lhs->argv[0]);
-                    exit(1);
+                    if(node->lhs->type!=N_COMMAND){
+                        invoke_node(node->lhs);
+                        node = node->rhs;
+                        exit(0);
+                    }else{
+                        execvp(node->lhs->argv[0],node->lhs->argv);
+                        perror(node->lhs->argv[0]);
+                        exit(1);
+                    }
                 }else if(node->type==N_COMMAND){
                     dup2(fd[i-1][0],0);
                     close(fd[i-1][0]); close(fd[i-1][1]);
@@ -106,6 +123,13 @@ int invoke_node(node_t *node) {
                     execvp(node->argv[0],node->argv);
                     perror(node->argv[0]);
                     exit(1);
+                }else if(node->type!=N_PIPE){
+                    dup2(fd[i-1][0],0);
+                    close(fd[i-1][0]); close(fd[i-1][1]);
+                    //LOG("final pipe%d",i-1);
+                    //LOG("cmd:%s",inspect_node(node));
+                    invoke_node(node);
+                    exit(0);
                 }else{
                     dup2(fd[i-1][0],0);
                     dup2(fd[i][1],1);
@@ -122,9 +146,9 @@ int invoke_node(node_t *node) {
                 close(fd[i-1][0]);close(fd[i-1][1]);
             }
             i++;
-            if(node->type == N_COMMAND) break;
+            if(node->type != N_PIPE) break;
             else node = node->rhs;
-        }while(node->type==N_PIPE || node->type==N_COMMAND);
+        }while(i<MAX_PIPE);
         
         for(int j = i;j>0;j--){
             wait(&status);
@@ -138,7 +162,35 @@ int invoke_node(node_t *node) {
         LOG("node->filename: %s", node->filename);
 
         /* Redirection (Task 4); implement here */
+        if(fork()==0){
+            int fd = open_file(node->filename,node->type);
 
+            if(node->type==N_REDIRECT_IN) {
+                dup2(fd,0);
+            }
+            else {
+                dup2(fd,1);
+            }
+
+            close(fd);
+
+            LOG("node->lhs:%s",inspect_node(node->lhs));
+            if(node->lhs->type!=N_COMMAND){
+                node=node->lhs;
+                int fd = open_file(node->filename,node->type);
+                if(node->type==N_REDIRECT_IN) dup2(fd,0);
+                else dup2(fd,1);
+                close(fd);
+            }
+            execvp(node->lhs->argv[0],node->lhs->argv);
+            perror(node->lhs->argv[0]);
+            exit(1);
+        }
+        if (wait(&status) == (pid_t)-1){
+            perror("wait");
+            exit(1);
+        }
+        LOG("go back from redirect");
         break;
 
     case N_SEQUENCE: /* foo ; bar */

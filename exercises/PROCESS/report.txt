@@ -3,27 +3,36 @@
 # 課題Nの回答は，### ExerciseN ### のコメント行の下の領域に記述して下さい．
 
 ### ID ### 学籍番号を「NN_NNNNN」のように書いて下さい
-
+18_17246
 ### Email ### mメールアドレスを書いて下さい
-
+loem.m.aa@m.titech.ac.jp
 ### Name ### 氏名を「東工 太郎」のように書いて下さい
-
+LOEM MENGSAY
 ### Exercise1 ### 課題1
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+rinmensai@rinmensais-Air PROCESS % ./main -q
+ttsh[1] 🐦 wc -l main.c
+     237 main.c
+ttsh[2] 🐦 
 
 
 ### Exercise2 ### 課題2
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+rinmensai@rinmensais-Air PROCESS % ./main -q
+ttsh[1] 🐦 grep '^#' report.txt | wc -l
+      29
+ttsh[2] 🐦 
 
 
 ### Exercise3 ### 課題3
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+rinmensai@rinmensais-Air PROCESS % ./main -q
+ttsh[1] 🐦 cat t/hello.txt | rev | wc
+       1       1      11
+ttsh[2] 🐦 
 
 
 ### Exercise4 ### 課題4
