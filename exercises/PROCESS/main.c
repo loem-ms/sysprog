@@ -76,7 +76,7 @@ int invoke_node(node_t *node) {
                     //LOG("first pipe%d",i);
                     //LOG("cmd:%s",node->lhs->argv[0]);
                     if(node->lhs->type!=N_COMMAND){
-                        exit(invoke_node(node->lhs));
+                        _exit(invoke_node(node->lhs));
                     }else{
                         execvp(node->lhs->argv[0],node->lhs->argv);
                         perror(node->lhs->argv[0]);
@@ -85,14 +85,14 @@ int invoke_node(node_t *node) {
                 }else if(node->type!=N_PIPE){
                     dup2(fd[i-1][0],0);
                     close(fd[i-1][0]); close(fd[i-1][1]);
-                    exit(invoke_node(node));
+                    _exit(invoke_node(node));
                 }else{
                     dup2(fd[i-1][0],0);
                     dup2(fd[i][1],1);
                     close(fd[i-1][0]);close(fd[i-1][1]);
                     close(fd[i][0]);close(fd[i][1]);
                     if(node->lhs->type!=N_COMMAND){
-                        exit(invoke_node(node->lhs));
+                        _exit(invoke_node(node->lhs));
                     }else{
                         execvp(node->lhs->argv[0],node->lhs->argv);
                         perror(node->lhs->argv[0]);
@@ -111,7 +111,6 @@ int invoke_node(node_t *node) {
         for(int j = i;j>0;j--){
             wait(&status);
         }
-        
         break;
 
     case N_REDIRECT_IN:     /* foo < bar */
@@ -122,16 +121,13 @@ int invoke_node(node_t *node) {
         /* Redirection (Task 4); implement here */
         if(fork()==0){
             int fd = open_file(node->filename,node->type);
-
             if(node->type==N_REDIRECT_IN) {
                 dup2(fd,0);
             }
             else {
                 dup2(fd,1);
             }
-
             close(fd);
-
             LOG("node->lhs:%s",inspect_node(node->lhs));
             if(node->lhs->type!=N_COMMAND){
                 node=node->lhs;
@@ -140,9 +136,13 @@ int invoke_node(node_t *node) {
                 else dup2(fd,1);
                 close(fd);
             }
-            execvp(node->lhs->argv[0],node->lhs->argv);
-            perror(node->lhs->argv[0]);
-            exit(1);
+            if(node->lhs->type!=N_COMMAND){
+                _exit(invoke_node(node->lhs));
+            }else{
+                execvp(node->lhs->argv[0],node->lhs->argv);
+                perror(node->lhs->argv[0]);
+                exit(1);
+            }
         }
         if (wait(&status) == (pid_t)-1){
             perror("wait");
@@ -156,31 +156,21 @@ int invoke_node(node_t *node) {
         LOG("node->rhs: %s", inspect_node(node->rhs));
 
         /* Sequential execution (Task A); implement here */
-        int i_seq=0;
-        do{
-            if(fork()==0){
-                /* child process */
-                if(node->type == N_SEQUENCE){
-                    
-                    execvp(node->lhs->argv[0],node->lhs->argv);
-                    perror(node->lhs->argv[0]);
-                    exit(1);
-                }else{
-                    execvp(node->argv[0],node->argv);
-                    perror(node->argv[0]);
-                    exit(1);
-                }
+        if (fork()==0){
+            if(node->lhs->type!=N_COMMAND)
+                _exit(invoke_node(node->lhs));
+            else{
+                execvp(node->lhs->argv[0],node->lhs->argv);
+                perror(node->lhs->argv[0]);
+                exit(1);
             }
-            wait(&status);
-            i_seq++;
-
-            LOG("ran node:%s",inspect_node(node));
-            if(node->type != N_SEQUENCE) {
-                LOG("break");
-                break;
-            }else node = node->rhs;
-        }while(i_seq<MAX_PIPE);
-
+        }else{
+            if(wait(&status)==(pid_t)-1){
+                perror("wait");
+                exit(1);
+            }
+            (invoke_node(node->rhs));
+        }
         break;
 
 
@@ -193,7 +183,7 @@ int invoke_node(node_t *node) {
         int val=1;
         if (fork()==0){
             if(node->lhs->type!=N_COMMAND)
-                exit(invoke_node(node->lhs));
+                _exit(invoke_node(node->lhs));
             else{
                 execvp(node->lhs->argv[0],node->lhs->argv);
                 perror(node->lhs->argv[0]);
@@ -218,9 +208,15 @@ int invoke_node(node_t *node) {
         LOG("node->lhs: %s", inspect_node(node->lhs));
 
         /* Subshell execution (Task C); implement here */
-        
+        if(fork()==0){
+                _exit(invoke_node(node->lhs));
+        }else{
+            if(wait(&status)==(pid_t)-1){
+                perror("wait");
+                exit(1);
+            }
+        }
         break;
-
     default:
         assert(false);
     }
