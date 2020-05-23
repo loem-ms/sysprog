@@ -31,6 +31,7 @@ int open_file(char *filename, type_t io){
         return open(filename,O_WRONLY|O_APPEND|O_CREAT,0666);
     }
 }
+
 /** Run a node and obtain an exit status. */
 int invoke_node(node_t *node) {
     LOG("Invoke: %s", inspect_node(node));
@@ -46,11 +47,11 @@ int invoke_node(node_t *node) {
             /* child process */
             execvp(node->argv[0],node->argv);
             perror(node->argv[0]);
-            exit(1);
+            _exit(1);
         }
         if (wait(&status) == (pid_t)-1){
             perror("wait");
-            exit(1);
+            _exit(1);
         }
         LOG("back from cmd");
         break;
@@ -60,55 +61,22 @@ int invoke_node(node_t *node) {
         LOG("node->rhs: %s", inspect_node(node->rhs));
         /* Simple comm and execution (Tasks 2 and 3); implement here */
         
-        int fd[MAX_PIPE][2];
-        int i=0;
-        do{
-            if(node->rhs!=NULL){
-                pipe(fd[i]);
-                //LOG("created");
-            }
-            
+        int fd[2];
+        pipe(fd);
+        if(fork()==0){
+            dup2(fd[1],1);
+            close(fd[0]); close(fd[1]);
+            _exit(invoke_node(node->lhs));
+        }else{
+            close(fd[1]);
             if(fork()==0){
-                /* child process */
-                if(i==0){
-                    dup2(fd[i][1],1);
-                    close(fd[i][0]); close(fd[i][1]);
-                    //LOG("first pipe%d",i);
-                    //LOG("cmd:%s",node->lhs->argv[0]);
-                    if(node->lhs->type!=N_COMMAND){
-                        _exit(invoke_node(node->lhs));
-                    }else{
-                        execvp(node->lhs->argv[0],node->lhs->argv);
-                        perror(node->lhs->argv[0]);
-                        exit(1);
-                    }
-                }else if(node->type!=N_PIPE){
-                    dup2(fd[i-1][0],0);
-                    close(fd[i-1][0]); close(fd[i-1][1]);
-                    _exit(invoke_node(node));
-                }else{
-                    dup2(fd[i-1][0],0);
-                    dup2(fd[i][1],1);
-                    close(fd[i-1][0]);close(fd[i-1][1]);
-                    close(fd[i][0]);close(fd[i][1]);
-                    if(node->lhs->type!=N_COMMAND){
-                        _exit(invoke_node(node->lhs));
-                    }else{
-                        execvp(node->lhs->argv[0],node->lhs->argv);
-                        perror(node->lhs->argv[0]);
-                        exit(1);
-                    }
-                }
-            }else if(i>0){
-                //LOG("close");
-                close(fd[i-1][0]);close(fd[i-1][1]);
+                dup2(fd[0],0);
+                close(fd[0]); close(fd[1]);
+                _exit(invoke_node(node->rhs));
+            }else{
+                close(fd[0]);
+                wait(&status);
             }
-            i++;
-            if(node->type != N_PIPE) break;
-            else node = node->rhs;
-        }while(i<MAX_PIPE);
-        
-        for(int j = i;j>0;j--){
             wait(&status);
         }
         break;
@@ -117,7 +85,6 @@ int invoke_node(node_t *node) {
     case N_REDIRECT_OUT:    /* foo > bar */
     case N_REDIRECT_APPEND: /* foo >> bar */
         LOG("node->filename: %s", node->filename);
-
         /* Redirection (Task 4); implement here */
         if(fork()==0){
             int fd = open_file(node->filename,node->type);
@@ -128,25 +95,11 @@ int invoke_node(node_t *node) {
                 dup2(fd,1);
             }
             close(fd);
-            LOG("node->lhs:%s",inspect_node(node->lhs));
-            if(node->lhs->type!=N_COMMAND){
-                node=node->lhs;
-                int fd = open_file(node->filename,node->type);
-                if(node->type==N_REDIRECT_IN) dup2(fd,0);
-                else dup2(fd,1);
-                close(fd);
-            }
-            if(node->lhs->type!=N_COMMAND){
-                _exit(invoke_node(node->lhs));
-            }else{
-                execvp(node->lhs->argv[0],node->lhs->argv);
-                perror(node->lhs->argv[0]);
-                exit(1);
-            }
+            _exit(invoke_node(node->lhs));
         }
         if (wait(&status) == (pid_t)-1){
             perror("wait");
-            exit(1);
+            _exit(1);
         }
         LOG("go back from redirect");
         break;
@@ -157,17 +110,11 @@ int invoke_node(node_t *node) {
 
         /* Sequential execution (Task A); implement here */
         if (fork()==0){
-            if(node->lhs->type!=N_COMMAND)
-                _exit(invoke_node(node->lhs));
-            else{
-                execvp(node->lhs->argv[0],node->lhs->argv);
-                perror(node->lhs->argv[0]);
-                exit(1);
-            }
+            _exit(invoke_node(node->lhs));
         }else{
             if(wait(&status)==(pid_t)-1){
                 perror("wait");
-                exit(1);
+                _exit(1);
             }
             (invoke_node(node->rhs));
         }
@@ -182,13 +129,7 @@ int invoke_node(node_t *node) {
         /* Branching (Task B); implement here */
         int val=1;
         if (fork()==0){
-            if(node->lhs->type!=N_COMMAND)
-                _exit(invoke_node(node->lhs));
-            else{
-                execvp(node->lhs->argv[0],node->lhs->argv);
-                perror(node->lhs->argv[0]);
-                exit(1);
-            }
+            _exit(invoke_node(node->lhs));
         }else{
             wait(&status);
             if(WIFEXITED(status)){
@@ -213,17 +154,19 @@ int invoke_node(node_t *node) {
         }else{
             if(wait(&status)==(pid_t)-1){
                 perror("wait");
-                exit(1);
+                _exit(1);
             }
         }
         break;
     default:
         assert(false);
     }
+    
     int res=0;
     if(WIFEXITED(status)){
         res=WEXITSTATUS(status);
     }
+    
     return res;
 }
 
