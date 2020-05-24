@@ -3,55 +3,84 @@
 # 課題Nの回答は，### ExerciseN ### のコメント行の下の領域に記述して下さい．
 
 ### ID ### 学籍番号を「NN_NNNNN」のように書いて下さい
-
+18_17246
 ### Email ### mメールアドレスを書いて下さい
-
+loem.m.aa@m.titech.ac.jp
 ### Name ### 氏名を「東工 太郎」のように書いて下さい
-
+LOEM MENGSAY
 ### Exercise1 ### 課題1
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+rinmensais-Air:mysh rinmensai$ ./main -q
+ttsh[1] 🐦 whoami
+rinmensai
+ttsh[2] 🐦 wc -l main.c
+     352 main.c
+ttsh[3] 🐦 
 
 
 ### Exercise2 ### 課題2
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+ttsh[3] 🐦 grep '^#' report.txt | wc -l
+      29
+ttsh[4] 🐦 
 
 
 ### Exercise3 ### 課題3
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+ttsh[4] 🐦 cat /etc/services | grep '^#' | wc -c
+  224085
+ttsh[5] 🐦 
 
 
 ### Exercise4 ### 課題4
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+ttsh[5] 🐦 ls > input.txt
+ttsh[6] 🐦 sort < input.txt > output.txt
+ttsh[7] 🐦 sort -r <input.txt > output.txt
+ttsh[8] 🐦 
 
 
 ### ExerciseA ### 発展課題A
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+ttsh[8] 🐦 wc -c main.c | rev ; echo completed ; echo main.c
+c.niam 7689    
+completed
+main.c
+ttsh[9] 🐦 
 
 
 ### ExerciseB ### 発展課題B
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+ttsh[9] 🐦 false || echo failed && echo succeed    
+failed
+succeed
+ttsh[10] 🐦 false && echo succeeded || echo failed  
+failed
+ttsh[11] 🐦 
 
 
 ### ExerciseC ### 発展課題C
 # 実装完了したことを示すための適当なコマンドの実行結果をまるごと（ttshプロンプト含めて）ペーストせよ．
 # 未完部分がある場合は明示せよ．
-
+ttsh[11] 🐦 ( ./fd ; echo hello | ./fd -i | ./fd -i ) > __test__.txt
+ttsh[12] 🐦 cat __test__.txt
+3 4 5 
+hello
+3 4 5 
+3 4 5 
+ttsh[13] 🐦 
 
 
 ### Comment ### 感想（採点対象外，好きに書いて下さい．）
-
+ちょっと大変ですが楽しいです！（？）
+行き詰まったところもあり徹夜もしました。
+今後体調を壊さないように気をつけます。
 
 
 ### END ###

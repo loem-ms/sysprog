@@ -113,7 +113,7 @@ int invoke_node(node_t *node) {
                     if(node->type==N_REDIRECT_IN) dup2(fd,0);
                     else dup2(fd,1);
                     close(fd);
-                }   
+                }
                 execvp(*node_argv(node),node_argv(node));
             }else {
                 //sleep(1);
