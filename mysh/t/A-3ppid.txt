@@ -1,4 +1,4 @@
 sh -c 'echo $PPID  > __test__1.txt'
 sh -c 'echo $PPID >> __test__1.txt' ; sh -c 'echo $PPID >> __test__1.txt' ; sh -c 'echo $PPID >> __test__1.txt' ; sh -c 'echo $PPID >> __test__1.txt'
-sh -c  'cat __test__.txt | wc -l'
-sh -c 'uniq __test__.txt | wc -l'
+sh -c  'cat __test__1.txt | wc -l'
+sh -c 'uniq __test__1.txt | wc -l'

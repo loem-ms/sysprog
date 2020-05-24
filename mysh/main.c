@@ -20,6 +20,7 @@ int prompt = 1;
 
 char *cmdname;
 
+/* open file for redirect */
 int open_file(char *filename, type_t io){
     int f;
     if(io == N_REDIRECT_IN){
@@ -132,7 +133,6 @@ int invoke_node(node_t *node) {
                 exit(1);
             }
         }
-        LOG("go back from pipe");
         break;
 
     case N_REDIRECT_IN:     /* foo < bar */
@@ -154,7 +154,7 @@ int invoke_node(node_t *node) {
 
             LOG("node->lhs:%s",inspect_node(node->lhs));
             if(node->lhs->type==N_SUBSHELL){
-                /* subshell */
+                /* for subshell */
                 _exit(invoke_node(node->lhs));
             }
 
@@ -175,7 +175,6 @@ int invoke_node(node_t *node) {
             perror("wait");
             exit(1);
         }
-        LOG("go back from redirect");
         break;
 
     case N_SEQUENCE: /* foo ; bar */
@@ -190,8 +189,11 @@ int invoke_node(node_t *node) {
                 exit(1);
             }
             if(cpid == 0){
-                //execvp(*node_argv(node),node_argv(node));
-                _exit(invoke_node(node->lhs));
+                if(node->lhs->type!=N_COMMAND){
+                    _exit(invoke_node(node->lhs));
+                }else{
+                    execvp(*node_argv(node),node_argv(node));
+                }
             }else{
                 if(wait(&status)==(pid_t)-1){
                     perror("wait");
@@ -201,8 +203,11 @@ int invoke_node(node_t *node) {
             node = node -> rhs;
         }
         if(fork()==0){
-                //execvp(node->argv[0],node->argv);
+            if(node->type!=N_COMMAND){
                 _exit(invoke_node(node));
+            }else{
+                execvp(node->argv[0],node->argv);
+            }   
         }else{
             if(wait(&status)==(pid_t)-1){
                 perror("wait");
@@ -271,7 +276,6 @@ int invoke_node(node_t *node) {
                 _exit(1);
             }
         }
-        break;
         break;
 
     default:
