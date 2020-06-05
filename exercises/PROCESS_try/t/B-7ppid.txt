@@ -1,0 +1,8 @@
+true  && sh -c 'echo $PPID > __test__.txt'
+false && sh -c 'echo $PPID >> __test__.txt'
+true  || sh -c 'echo $PPID >> __test__.txt'
+false || sh -c 'echo $PPID >> __test__.txt'
+true  || sh -c 'echo $PPID >> __test__.txt' && sh -c 'echo $PPID >> __test__.txt'
+false && sh -c 'echo $PPID >> __test__.txt' || sh -c 'echo $PPID >> __test__.txt'
+sh -c  'cat __test__.txt | wc -l'
+sh -c 'uniq __test__.txt | wc -l'

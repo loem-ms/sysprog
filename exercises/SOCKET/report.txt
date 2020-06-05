@@ -1,0 +1,65 @@
+# [注意]
+# 下記の # で始まるコメント行を変更（修正，削除）しないこと．
+# 課題Nの回答は，### ExerciseN ### のコメント行の下の領域に記述して下さい．
+
+### ID ### 学籍番号を「NN_NNNNN」のように書いて下さい
+18_17246
+### Email ### mメールアドレスを書いて下さい
+loem.m.aa@m.titech.ac.jp
+### Name ### 氏名を「東工 太郎」のように書いて下さい
+LOEM MENGSAY
+### Exercise1 ### 課題1
+# telnet による適当な接続結果をペーストしましょう．
+rinmensai@rinmensais-Air ~ % telnet localhost 10000
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+GET / HTTP/1.1
+
+HTTP/1.0 200 OK
+Content-Type: text/html
+
+<title>Welcome</title>
+<h1>It Works!</h1>
+<p>Seeing this instead of the website you expected?
+<a href="https://www.google.com/search?q=%E3%81%82%E3%81%AA%E3%81%9F%E3%81%AE%E4%BA%88%E6%83%B3%E3%81%AB%E5%8F%8D%E3%81%97%E3%81%A6%E3%80%81%E3%81%93%E3%81%AE%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%8C%E8%A6%8B%E3%81%88%E3%81%A6%E3%81%84%E3%82%8B%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B">(What's this?)</a></p>
+<ul>
+<li><a href="test.html">test</a></li>
+<li><a href="cgi-c">cgi-c</a></li>
+<li><a href="cgi-perl.pl">cgi-perl.pl</a></li>
+</ul>
+Connection closed by foreign host.
+rinmensai@rinmensais-Air ~ % 
+
+### Exercise2 ### 課題2
+# 実装方法について，概要を簡単にまとめてください．
+main.c の server関数を改造する。
+並行サーバはfork()による実装を行う。
+まず、サーバプロセスが接続待ちソケットに対しacceptでクライアントからのコネクション要求を待つ。
+クライアントとのコネクションが確立された後、fork()で子サーバプロセスを作る。
+子サーバプロセスに関しては、クライアントからのコネクション要求待つソケット記述子をcloseする。
+その後、do_sessionでクライアントからの要求を対応する。対応処理が終わったときexitで終了させる。
+一方、親サーバプロセスに関しては、接続済みのソケット記述子をcloseし次のクライアント要求を待つ。
+
+
+### ExerciseA ### 発展課題A
+# telnet による適当な接続結果をペーストしましょう．
+rinmensai@rinmensais-Air ~ % telnet localhost 10000
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+GET /cgi-perl.pl HTTP/1.1
+
+HTTP/1.0 200 OK
+Content-Type: text/html
+
+<p>perl is running.</p>
+Connection closed by foreign host.
+rinmensai@rinmensais-Air ~ % 
+
+
+### Comment ### 感想（採点対象外，好きに書いて下さい．）
+
+
+
+### END ###

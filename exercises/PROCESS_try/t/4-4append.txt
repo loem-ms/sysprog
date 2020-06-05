@@ -1,0 +1,3 @@
+echo foo > __test__.txt
+echo bar >> __test__.txt
+cat __test__.txt
