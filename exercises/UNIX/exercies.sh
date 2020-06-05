@@ -63,3 +63,5 @@ cut -f 2 syscall_headers.txt|sort|uniq -c|sort -n -r|head -n 3
 grep -Fxf <(rev words.txt)  words.txt |wc -l
 # or
 rev words.txt|grep -Fxf words.txt |wc -l
+# or (解答例)
+rev words.txt|cat words.txt -|sort|uniq -c|grep 2|wc -l
