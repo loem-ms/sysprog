@@ -187,6 +187,7 @@ void serve() {
         if (connfd == -1) PERROR_DIE("accept");
         
         // Task2
+        
         pid_t cpid;
         if ((cpid = fork()) == -1){
             PERROR_DIE("fork");
@@ -201,8 +202,7 @@ void serve() {
             PERROR_DIE("close socket");
           }
         }
-        
-    }
+    }   
 }
 
 void parse_options(int argc, char **argv) {

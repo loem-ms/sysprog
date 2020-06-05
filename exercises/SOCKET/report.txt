@@ -10,7 +10,7 @@ loem.m.aa@m.titech.ac.jp
 LOEM MENGSAY
 ### Exercise1 ### 課題1
 # telnet による適当な接続結果をペーストしましょう．
-rinmensai@rinmensais-Air ~ % telnet localhost 10000
+rinmensais-Air:SOCKET rinmensai$ telnet localhost 10000
 Trying 127.0.0.1...
 Connected to localhost.
 Escape character is '^]'.
@@ -29,7 +29,7 @@ Content-Type: text/html
 <li><a href="cgi-perl.pl">cgi-perl.pl</a></li>
 </ul>
 Connection closed by foreign host.
-rinmensai@rinmensais-Air ~ % 
+rinmensais-Air:SOCKET rinmensai$ 
 
 ### Exercise2 ### 課題2
 # 実装方法について，概要を簡単にまとめてください．
@@ -44,7 +44,7 @@ main.c の server関数を改造する。
 
 ### ExerciseA ### 発展課題A
 # telnet による適当な接続結果をペーストしましょう．
-rinmensai@rinmensais-Air ~ % telnet localhost 10000
+rinmensais-Air:SOCKET rinmensai$ telnet localhost 10000
 Trying 127.0.0.1...
 Connected to localhost.
 Escape character is '^]'.
@@ -55,7 +55,7 @@ Content-Type: text/html
 
 <p>perl is running.</p>
 Connection closed by foreign host.
-rinmensai@rinmensais-Air ~ % 
+rinmensais-Air:SOCKET rinmensai$ 
 
 
 ### Comment ### 感想（採点対象外，好きに書いて下さい．）
