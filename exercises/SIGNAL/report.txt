@@ -3,31 +3,80 @@
 ### 課題Nの回答は，### ExerciseN ### のコメント行の下の領域に記述して下さい．
 
 ### ID ### 学籍番号を nnBnnnnn のように書いて下さい
-
+18B17246
 ### Email ### mメールアドレスを書いて下さい
-
+loem.m.aa@m.titech.ac.jp
 ### Name ### 氏名を「東工 太郎」のように書いて下さい
-
+LOEM MENGSAY
 ### Exercise1 ### 課題1
 ### ^Cを打っても止まらない様子を実演し，その入出力結果（^Cを明示すること）をペーストせよ．
-
+rinmensais-Air:SIGNAL rinmensai$ ./signal0
+......^C...^C^C.^C...^C.^C......^C................
 
 
 ### Exercise2 ### 課題2
 ### 実行を適当なところで止め，実行結果をペーストせよ．
-
+rinmensais-Air:SIGNAL rinmensai$ ./signal0 
+...*....*.....*....*....*....*....*...^\Quit: 3
 
 
 ### Exercise3 ### 課題3
 ### 実装完了したことを示すための適当な入出力結果をペースとせよ（./main -q で実行，ttshプロンプトを含む）．
 ### テスト結果の貼り付けは認めない．未完成部分がある場合は明示せよ．
+rinmensais-Air:SIGNAL rinmensai$ ./main -q
+ttsh[1] 🐦 ./count 10 PRE-TEST 
+PRE-TEST-3 PRE-TEST-2 PRE-TEST-1 🧟 🔥
+ttsh[2] 🐦 ./count 100 FIRST &
+ttsh[3] 🐦 ./count 150 SECOND &
+ttsh[4] 🐦 echo "it will work well"
+it will work well
+🔥
+ttsh[5] 🐦 FIRST-3 FIRST-2 FIRST-1 🧟 🔥
+
+ttsh[6] 🐦 echo "DONE: FIRST"
+DONE: FIRST
+🔥
+ttsh[7] 🐦 SECOND-3 SECOND-2 SECOND-1 🧟 🔥
+
+ttsh[8] 🐦 echo "SUCCEEDED"
+SUCCEEDED
+🔥
+ttsh[9] 🐦 
 
 
 
 ### ExerciseA ### 発展課題A
 ### 実装完了したことを示すための適当な入出力結果をペースとせよ（./main -q で実行，ttshプロンプトを含む）．
 ### テスト結果の貼り付けは認めない．未完成部分がある場合は明示せよ．
+rinmensais-Air:SIGNAL rinmensai$ ./main -q
+ttsh[1] 🐦 ./count 10 PRE-TEST
+PRE-TEST-3 PRE-TEST-2 PRE-TEST-1 🧟 🔥
+ttsh[2] 🐦 ./count 20 TEST-ONE
+^Zttsh[3] 🐦 echo "input: ^Z"
+input: ^Z
+🔥
+ttsh[4] 🐦 echo "input: fg"
+input: fg
+🔥
+ttsh[5] 🐦 fg
+TEST-ONE-3 TEST-ONE-2 TEST-ONE-1 🧟 🔥
+ttsh[6] 🐦 echo "fg finished successfully"
+fg finished successfully
+🔥
+ttsh[7] 🐦 ./count 20 TEST-TWO
+^Zttsh[8] 🐦 echo "input: ^Z"
+input: ^Z
+🔥
+ttsh[9] 🐦 echo "input: bg"
+input: bg
+🔥
+ttsh[10] 🐦 bg
+ttsh[11] 🐦 TEST-TWO-3 TEST-TWO-2 TEST-TWO-1 🧟 🔥
 
+ttsh[12] 🐦 echo "bg finished successfully"
+bg finished successfully
+🔥
+ttsh[13] 🐦 
 
 
 ### Comment ### 感想（採点対象外，好きに書いて下さい．）

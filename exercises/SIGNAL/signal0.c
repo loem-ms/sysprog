@@ -1,12 +1,17 @@
 #include <signal.h> /* signal */
 #include <unistd.h> /* write */
 
+void handler(int sig){
+    write(STDERR_FILENO,"*",1);
+    alarm(5);
+}
 
 int main() {
     /* Exercise 1: Implement here. */
     signal(SIGINT,SIG_IGN);
     /* Exercise 2: Implement here. */
-    // alarm(5);
+    signal(SIGALRM,handler);
+    alarm(5);
 
     /* Prints dots. */
     for (;;) {
