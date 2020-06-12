@@ -35,6 +35,8 @@ char *chomp(char *line) {
     return line;
 }
 
+volatile pid_t cpid;
+
 void chld_handler(int sig){
   pid_t waited_pid;
   int status;
@@ -51,8 +53,7 @@ void chld_handler(int sig){
 }
 
 void tstp_handler(int sig){
-  signal(SIGTSTP,SIG_IGN);
-  kill(-getpid(), SIGTSTP);
+  kill(-cpid, SIGTSTP);
 }
 
 /** Run a node and obtain an exit status. */
@@ -69,65 +70,65 @@ int invoke_node(node_t *node) {
         pid = fork();
         signal(SIGCHLD, chld_handler);
         if (pid == -1) PERROR_DIE("fork");
-
         if (pid == 0) {
             // child
-              if (execvp(node->argv[0], node->argv) == -1) PERROR_DIE("execvp");
-              return 0; /* never happen */ 
+            if (execvp(node->argv[0], node->argv) == -1) PERROR_DIE("execvp");
+            return 0; 
         }
-        // assign an independent process group
-        if (setpgid(pid, pid) == -1) PERROR_DIE("setpgid");
-
       return 0;
     }
 
-    if(!strcmp(node->argv[0],"fg")){
-      LOG("fg");
-      kill(-1,SIGCONT);
-      // wait a child process
-      int status;
-      int options = WUNTRACED;
-      pid_t waited_pid = waitpid(-1, &status, options);
-      if (waited_pid == -1) {
-          if (errno != ECHILD) PERROR_DIE("waitpid");
-      } else {
-          LOG("Waited: pid=%d, raw_stat=%d, stat=%d", waited_pid, status, WEXITSTATUS(status));
-          if (WIFEXITED(status)) write(STDERR_FILENO, fire, strlen(fire));
-      }
-      return WEXITSTATUS(status);
-
-    }else if(!strcmp(node->argv[0],"bg")){
-      LOG("bg");
-      signal(SIGCHLD,chld_handler);
-      kill(-1,SIGCONT);
-      return 0;
+    if(!strcmp(node->argv[0],"bg")){
+        // move to background
+        LOG("bg");
+        signal(SIGCHLD,chld_handler);
+        kill(-1,SIGCONT);
+        return 0;
+    }else if(!strcmp(node->argv[0],"fg")){
+        // bring to foreground
+        LOG("fg");
+        signal(SIGTSTP,tstp_handler);
+        kill(-1,SIGCONT);
+        // wait child process
+        int status;
+        int options = WUNTRACED;
+        pid_t waited_pid = waitpid(-1, &status, options);
+        if (waited_pid == -1) {
+            if (errno != ECHILD) PERROR_DIE("waitpid");
+        } else {
+            LOG("Waited: pid=%d, raw_stat=%d, stat=%d", waited_pid, status, WEXITSTATUS(status));
+            if (WIFEXITED(status)) write(STDERR_FILENO, fire, strlen(fire));
+        }
+        return WEXITSTATUS(status);
     }else{
-      // generates a child process
-      fflush(stdout);
-      pid = fork();
-      signal(SIGTSTP,tstp_handler);
-      if (pid == -1) PERROR_DIE("fork");
+        // simple command
+        // generates a child process
+        fflush(stdout);
+        pid = fork();
+        if (pid == -1) PERROR_DIE("fork");
 
-      if (pid == 0) {
-          // child
-          LOG("child:%d\n",getpid());
-          if (execvp(node->argv[0], node->argv) == -1) PERROR_DIE("execvp");
-          return 0; /* never happen */
-      }
-      
-      // assign an independent process group
-      if (setpgid(pid, getpid()) == -1) PERROR_DIE("setpgid");
-      // wait a child process
-      int status;
-      int options = WUNTRACED;
-      pid_t waited_pid = waitpid(pid, &status, options);
-      if (waited_pid == -1) {
-          if (errno != ECHILD) PERROR_DIE("waitpid");
-      } else {
-          LOG("Waited: pid=%d, raw_stat=%d, stat=%d", waited_pid, status, WEXITSTATUS(status));
-          if (WIFEXITED(status)) write(STDERR_FILENO, fire, strlen(fire));
-      }
-      return WEXITSTATUS(status);
+        if (pid == 0) {
+            // child
+            if (execvp(node->argv[0], node->argv) == -1) PERROR_DIE("execvp");
+            return 0; /* never happen */
+        }
+        signal(SIGTSTP,tstp_handler);
+        // assign an independent process group
+        
+        if (setpgid(pid, pid) == -1) PERROR_DIE("setpgid");
+        cpid = pid;
+
+        // wait a child process
+        int status;
+        int options = WUNTRACED;
+        pid_t waited_pid = waitpid(pid, &status, options);
+        if (waited_pid == -1) {
+            if (errno != ECHILD) PERROR_DIE("waitpid");
+        } else {
+            LOG("Waited: pid=%d, raw_stat=%d, stat=%d", waited_pid, status, WEXITSTATUS(status));
+            if (WIFEXITED(status)) write(STDERR_FILENO, fire, strlen(fire));
+        }
+        return WEXITSTATUS(status);
     }
 }
 

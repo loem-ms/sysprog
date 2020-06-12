@@ -10,8 +10,8 @@ int main() {
     /* Exercise 1: Implement here. */
     signal(SIGINT,SIG_IGN);
     /* Exercise 2: Implement here. */
-    signal(SIGALRM,handler);
-    alarm(5);
+    //signal(SIGALRM,handler);
+    //alarm(5);
 
     /* Prints dots. */
     for (;;) {
