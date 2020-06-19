@@ -23,6 +23,14 @@ foo -> baz;
 
 ### ExerciseA ### 発展課題A
 ### inst0-simple 実行時の実行結果の cg.dot の中身をペーストせよ．
+strict digraph G {
+main -> foo [label="1"];
+foo -> bar [label="1"];
+foo -> baz [label="1"];
+main -> foo [label="2"];
+foo -> bar [label="2"];
+foo -> baz [label="2"];
+}
 
 
 

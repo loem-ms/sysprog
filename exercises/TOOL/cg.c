@@ -12,14 +12,19 @@
 #include <unistd.h>
 
 #define MAX_DEPTH 32
-#define MAX_current_call 1024
+#define MAX_CALLS 1024*2
 
 int isRoot = 0;
 int current_call = 0;
 void *root_addr;
 FILE *fp;
+char *cg_label_env;
 
-void * call_addr[MAX_DEPTH];
+int called_idx = 0;
+int called_num[MAX_CALLS] = {0};
+
+void * call_log[MAX_DEPTH];
+void * called_uniq[MAX_CALLS];
 
 __attribute__((no_instrument_function))
 int log_to_stderr(const char *file, int line, const char *func, const char *format, ...) {
@@ -40,7 +45,7 @@ const char *addr2name(void* address) {
 }
 
 __attribute__((no_instrument_function))
-void isRoot_cg_dot(){
+void open_file(){
     if ((fp = fopen("cg.dot", "w")) == NULL) {
         perror("fopen");
         exit(1);
@@ -50,30 +55,61 @@ void isRoot_cg_dot(){
     isRoot = 1;
 }
 
+__attribute__((no_instrument_function))
+int isCalled(void *addr, void *list[]) {
+    int i=0;
+    while (list[i]!= NULL && i<MAX_CALLS) {
+        if (list[i] == addr) return i;
+        i++;
+    }
+    return -1;
+}
 
 
 
 __attribute__((no_instrument_function))
 void __cyg_profile_func_enter(void *addr, void *call_site) {
+    LOG(">>> %s \n", addr2name(addr), addr);
     /* My Implementation */
     if (isRoot == 0) {
-        isRoot_cg_dot();
-        call_addr[current_call] = addr;
+        open_file();
+        call_log[current_call] = addr;
         root_addr = addr;
+        cg_label_env = getenv("SYSPROG_LABEL");
+        //LOG("env: %s\n",cg_label_env);
     } else {
-        fseek(fp,-2,SEEK_END);
-        fprintf(fp,"%s -> %s;\n}\n",addr2name(call_addr[current_call]),addr2name(addr));
-        current_call++;
-        call_addr[current_call] = addr;
+        if (cg_label_env != NULL){
+            int idx =isCalled(addr,called_uniq);
+            if (idx == -1) {
+                called_uniq[called_idx] = addr;
+                LOG("added call: %s\n",addr2name(called_uniq[called_idx]));
+                idx = called_idx;
+                called_idx ++;
+            }
+            LOG("found at %d with label %d\n",idx,called_num[idx]);
+            called_num[idx] += 1;
+            fseek(fp,-2,SEEK_END);
+            fprintf(fp,"%s -> %s [label=\"%d\"];\n}\n",addr2name(call_log[current_call]),addr2name(addr),called_num[idx]);
+            current_call++;
+            call_log[current_call] = addr;
+            
+        }else{
+            fseek(fp,-2,SEEK_END);
+            fprintf(fp,"%s -> %s;\n}\n",addr2name(call_log[current_call]),addr2name(addr));
+            current_call++;
+            call_log[current_call] = addr;
+        }
     }
-    LOG(">>> %s \n", addr2name(addr), addr);
 }
 
 __attribute__((no_instrument_function))
 void __cyg_profile_func_exit(void *addr, void *call_site) {
-    /* My Implementation */
-    call_addr[current_call] = NULL;
-    current_call--;
     LOG("<<< %s (%p)\n", addr2name(addr), addr);
-    if (addr == root_addr) fclose(fp);
+    /* My Implementation */
+    call_log[current_call] = NULL;
+    current_call--;
+    if (addr == root_addr) {
+        fclose(fp);
+        isRoot = 0;
+    }
 }

@@ -1,8 +1,8 @@
 strict digraph G{
-    c -> d;
+    c -> d [label="1"];
     a -> b;
     a -> c;
-    c -> d;
-    c -> d;
+    c -> d [label="2"];
+    c -> d [label="3"];
     a -> e -> f;
 }
