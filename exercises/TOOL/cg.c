@@ -14,17 +14,18 @@
 #define MAX_DEPTH 32
 #define MAX_CALLS 1024*2
 
-int isRoot = 0;
-int current_call = 0;
-void *root_addr;
+int isRoot          = 0;        // main
+int current_call    = 0;        
+int called_idx      = 0;        // number of uniqued call
+void *root_addr;                // main address
+
 FILE *fp;
-char *cg_label_env;
+char *cg_label_env;     
 
-int called_idx = 0;
-int called_num[MAX_CALLS] = {0};
 
-void * call_log[MAX_DEPTH];
-void * called_uniq[MAX_CALLS];
+int called_num[MAX_CALLS] = {0};    // number of calls
+void * call_log[MAX_DEPTH];         // caller and callee order
+void * called_uniq[MAX_CALLS];      // all uniqued calls
 
 __attribute__((no_instrument_function))
 int log_to_stderr(const char *file, int line, const char *func, const char *format, ...) {
@@ -44,6 +45,7 @@ const char *addr2name(void* address) {
     return dli.dli_sname;
 }
 
+// My Implementation
 __attribute__((no_instrument_function))
 void open_file(){
     if ((fp = fopen("cg.dot", "w")) == NULL) {
@@ -55,6 +57,7 @@ void open_file(){
     isRoot = 1;
 }
 
+// My Implementation
 __attribute__((no_instrument_function))
 int isCalled(void *addr, void *list[]) {
     int i=0;
@@ -64,8 +67,6 @@ int isCalled(void *addr, void *list[]) {
     }
     return -1;
 }
-
-
 
 __attribute__((no_instrument_function))
 void __cyg_profile_func_enter(void *addr, void *call_site) {
@@ -82,23 +83,21 @@ void __cyg_profile_func_enter(void *addr, void *call_site) {
             int idx =isCalled(addr,called_uniq);
             if (idx == -1) {
                 called_uniq[called_idx] = addr;
-                LOG("added call: %s\n",addr2name(called_uniq[called_idx]));
+                //LOG("added call: %s\n",addr2name(called_uniq[called_idx]));
                 idx = called_idx;
                 called_idx ++;
             }
-            LOG("found at %d with label %d\n",idx,called_num[idx]);
-            called_num[idx] += 1;
+            //LOG("found at %d with label %d\n",idx,called_num[idx]);
+            called_num[idx] ++;
             fseek(fp,-2,SEEK_END);
             fprintf(fp,"%s -> %s [label=\"%d\"];\n}\n",addr2name(call_log[current_call]),addr2name(addr),called_num[idx]);
-            current_call++;
-            call_log[current_call] = addr;
-            
         }else{
             fseek(fp,-2,SEEK_END);
             fprintf(fp,"%s -> %s;\n}\n",addr2name(call_log[current_call]),addr2name(addr));
-            current_call++;
-            call_log[current_call] = addr;
         }
+
+        current_call ++;
+        call_log[current_call] = addr;
     }
 }
 

@@ -10,6 +10,7 @@ loem.m.aa@m.titech.ac.jp
 LOEM MENGSAY
 ### Exercise1 ### 課題1
 ### inst0-simple 実行時の実行結果の cg.dot の中身をペーストせよ．
+
 strict digraph G {
 main -> foo;
 foo -> bar;
@@ -19,10 +20,9 @@ foo -> bar;
 foo -> baz;
 }
 
-
-
 ### ExerciseA ### 発展課題A
 ### inst0-simple 実行時の実行結果の cg.dot の中身をペーストせよ．
+
 strict digraph G {
 main -> foo [label="1"];
 foo -> bar [label="1"];
@@ -32,10 +32,9 @@ foo -> bar [label="2"];
 foo -> baz [label="2"];
 }
 
-
-
 ### Comment ### 感想（採点対象外，好きに書いて下さい．）
 
-
+最高の授業でした。プログラミングが得意ではない私も楽しく演習課題（発展課題）を取り組めました。
+ありがとうございました！
 
 ### END ###
