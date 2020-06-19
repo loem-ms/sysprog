@@ -1,0 +1,87 @@
+### [注意]
+### 下記の ### で始まるコメント行を変更（修正，削除）しないこと．
+### 課題Nの回答は，### ExerciseN ### のコメント行の下の領域に記述して下さい．
+
+### ID ### 学籍番号を nnBnnnnn のように書いて下さい
+18B17246
+### Email ### mメールアドレスを書いて下さい
+loem.m.aa@m.titech.ac.jp
+### Name ### 氏名を「東工 太郎」のように書いて下さい
+LOEM MENGSAY
+### Exercise1 ### 課題1
+### ^Cを打っても止まらない様子を実演し，その入出力結果（^Cを明示すること）をペーストせよ．
+rinmensais-Air:SIGNAL rinmensai$ ./signal0
+rinmensais-Air:SIGNAL rinmensai$ ./signal0 
+......^C..^C.^C^C^C.^C.....^C..........
+
+### Exercise2 ### 課題2
+### 実行を適当なところで止め，実行結果をペーストせよ．
+rinmensais-Air:SIGNAL rinmensai$ ./signal0 
+....*....*....*....*....*.....*.^\Quit: 3
+rinmensais-Air:SIGNAL rinmensai$ 
+
+### Exercise3 ### 課題3
+### 実装完了したことを示すための適当な入出力結果をペースとせよ（./main -q で実行，ttshプロンプトを含む）．
+### テスト結果の貼り付けは認めない．未完成部分がある場合は明示せよ．
+rinmensais-Air:SIGNAL rinmensai$ ./main -q
+ttsh[1] 🐦 ./count 5 PRE-TEST
+PRE-TEST-3 PRE-TEST-2 PRE-TEST-1 🧟 🔥
+ttsh[2] 🐦 ./count 50 FIRST &
+ttsh[3] 🐦 ./count 100 SECOND &
+ttsh[4] 🐦 echo "moved to background"
+moved to background
+🔥
+ttsh[5] 🐦 FIRST-3 FIRST-2 FIRST-1 🧟 🔥
+SECOND-3 SECOND-2 SECOND-1 🧟 🔥
+
+ttsh[6] 🐦 echo "succeeded"
+succeeded
+🔥
+ttsh[7] 🐦 
+
+
+
+### ExerciseA ### 発展課題A
+### 実装完了したことを示すための適当な入出力結果をペースとせよ（./main -q で実行，ttshプロンプトを含む）．
+### テスト結果の貼り付けは認めない．未完成部分がある場合は明示せよ．
+rinmensais-Air:SIGNAL rinmensai$ ./main -q
+ttsh[1] 🐦 ./count 10
+^Zttsh[2] 🐦 
+ttsh[3] 🐦 ps a
+  PID   TT  STAT      TIME COMMAND
+  677 s000  Ss     0:00.13 /bin/sh -l
+ 4787 s000  S+     0:00.00 ./main -q
+ 4791 s000  T      0:00.00 ./count 10
+ 4798 s000  R      0:00.01 ps a
+🔥
+ttsh[4] 🐦 fg
+3 2 1 🧟 🔥
+ttsh[5] 🐦 ./count 20 second
+^Zttsh[6] 🐦 ps a
+  PID   TT  STAT      TIME COMMAND
+  677 s000  Ss     0:00.13 /bin/sh -l
+ 4787 s000  S+     0:00.01 ./main -q
+ 4836 s000  T      0:00.00 ./count 20 second
+ 4840 s000  R      0:00.00 ps a
+🔥
+ttsh[7] 🐦 bg
+ttsh[8] 🐦 ps a
+  PID   TT  STAT      TIME COMMAND
+  677 s000  Ss     0:00.13 /bin/sh -l
+ 4787 s000  S+     0:00.01 ./main -q
+ 4836 s000  S      0:00.00 ./count 20 second
+ 4844 s000  R      0:00.00 ps a
+🔥
+ttsh[9] 🐦 second-3 second-2 second-1 🧟 🔥
+
+ttsh[10] 🐦 echo DONE
+DONE
+🔥
+ttsh[11] 🐦 
+
+
+### Comment ### 感想（採点対象外，好きに書いて下さい．）
+
+
+
+### END ###
