@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #define MAX_DEPTH 32
-#define MAX_CALLS 1024*2
+#define MAX_CALLS 1024
 
 int isRoot          = 0;        // main
 int current_call    = 0;        
